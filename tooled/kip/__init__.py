@@ -84,7 +84,7 @@ def filter_track(dataframe:pd.DataFrame, channel_name:str, threshold:float, posi
     :param position: Filter positional argument.
     :return: Filtered DataFrame.
     """
-    dataframe_track_sum = dataframe.groupby('track').sum().reset_idex()
+    dataframe_track_sum = dataframe.groupby('track').sum().reset_index()
     sorted_tracks = []
 
     if position == 'above':
@@ -106,11 +106,10 @@ def filter_track(dataframe:pd.DataFrame, channel_name:str, threshold:float, posi
     sorted_tracks_unique = set(sorted_tracks)
     df_filtered = _create_empty_dataframe(dataframe)
 
-    # TODO: imporove this logic
     # create new DataFrame with matched traks
     for index, row in dataframe.iterrows():
         if row['track'] in sorted_tracks_unique:
-            df_filtered = df_filtered.append({'time':row['time'],'mean_channel_2':row['mean_channel_2'],'mean_channel_3':row['mean_channel_3'],'mean_channel_4':row['mean_channel_4'],'track':row['track'],'loc':row['loc'],'condition':row['condition'],'replicate':row['replicate']}, ignore_index=True)
+            df_filtered = df_filtered.append(row)
         else:
             pass
 
