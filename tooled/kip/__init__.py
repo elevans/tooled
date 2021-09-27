@@ -3,7 +3,7 @@ import seaborn as sns
 import pandas as pd
 from matplotlib import pyplot as plt
 
-def open_file(path:str) -> pd.DataFrame:
+def open_file(path: str) -> pd.DataFrame:
     """
     Open a .csv results file from KNIME.
     :param path: Path to the .csv results file.
@@ -17,7 +17,7 @@ def open_file(path:str) -> pd.DataFrame:
 
     return df
 
-def write_file(dataframe:pd.DataFrame, file_name:str):
+def write_file(dataframe: pd.DataFrame, file_name: str):
     """
     Write DataFrame to file.
     :param dataframe: Pandas DataFrame to be saved to file.
@@ -33,7 +33,7 @@ def write_file(dataframe:pd.DataFrame, file_name:str):
 
     return
 
-def display_track_sum(dataframe:pd.DataFrame, channel_name:str, style='scatter'):
+def display_track_sum(dataframe: pd.DataFrame, channel_name: str, style='scatter'):
     """
     Sums individual tracks over time and displays x/y scatter graph.
     """
@@ -49,7 +49,7 @@ def display_track_sum(dataframe:pd.DataFrame, channel_name:str, style='scatter')
 
     return
 
-def display_shade_line_graph(dataframe:pd.DataFrame, channel_name:str):
+def display_shade_line_graph(dataframe: pd.DataFrame, channel_name: str):
     """
     Things
     """
@@ -58,7 +58,7 @@ def display_shade_line_graph(dataframe:pd.DataFrame, channel_name:str):
 
     return
 
-def delete_track(dataframe:pd.DataFrame, track_name:str) -> pd.DataFrame:
+def delete_track(dataframe: pd.DataFrame, track_name: str) -> pd.DataFrame:
     """
     Delete the specified track from the DataFrame.
     :param dataframe: Input DataFrame.
@@ -75,7 +75,7 @@ def delete_track(dataframe:pd.DataFrame, track_name:str) -> pd.DataFrame:
 
     return df_trim
 
-def filter_track(dataframe:pd.DataFrame, channel_name:str, threshold:float, position:str) -> pd.DataFrame:
+def filter_track(dataframe: pd.DataFrame, channel_name: str, threshold: float, position: str) -> pd.DataFrame:
     """
     Filter tracks from a DataFrame.
     :param dataframe: Input DataFrame to be filtered.
@@ -115,7 +115,7 @@ def filter_track(dataframe:pd.DataFrame, channel_name:str, threshold:float, posi
 
     return df_filtered
 
-def _create_empty_dataframe(dataframe:pd.DataFrame) -> pd.DataFrame:
+def _create_empty_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
     Create an empty Pandas DataFrame from an existing DataFrame.
     :param dataframe: Input DataFrame.
@@ -125,7 +125,7 @@ def _create_empty_dataframe(dataframe:pd.DataFrame) -> pd.DataFrame:
 
     return empty_df
 
-def _check_valid_channel(dataframe:pd.DataFrame, channel_name:str) -> bool:
+def _check_valid_channel(dataframe: pd.DataFrame, channel_name: str) -> bool:
     data_status = False
     df_col_names = list(dataframe.columns.values)
     for name in df_col_names:
