@@ -1,3 +1,6 @@
+import tooled.plot
+
+
 def obj_info(object):
     """
     Print out a readable list from dir of an object.
