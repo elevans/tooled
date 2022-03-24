@@ -1,4 +1,5 @@
 import tooled.plot
+import tooled.dataframe
 
 
 def obj_info(object):
