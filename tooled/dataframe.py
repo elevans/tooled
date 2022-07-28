@@ -1,7 +1,10 @@
 import pandas as pd
 from typing import List
 
-def extract_column_as_dataframe(column: str, dataframe: pd.DataFrame) -> List[pd.DataFrame]:
+
+def extract_column_as_dataframe(
+    column: str, dataframe: pd.DataFrame
+) -> List[pd.DataFrame]:
     """Extract a column's unique values as a List of DataFrames.
 
     The unique values of a column are used to extract DataFrames in a List.

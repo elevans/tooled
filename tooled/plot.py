@@ -19,7 +19,7 @@ def scatter_3d(axes: List[str], data: pd.DataFrame, show=True):
         axes = data.columns.tolist()
 
     fig = plt.figure()
-    ax = fig.add_subplot(111 ,projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
     x = data[axes[0]]
     y = data[axes[1]]
     z = data[axes[2]]
