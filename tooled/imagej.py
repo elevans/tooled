@@ -5,6 +5,8 @@ from functools import lru_cache
 
 
 class Deconvolution:
+    """Deconvolve an image with ImageJ Ops implementation of Richardson Lucy.
+    """
     def __init__(
         self,
         OpService,
@@ -29,8 +31,10 @@ class Deconvolution:
         self.ri_immersion = ri_immersion
         self.ri_sample = ri_sample
 
-    def get_settings(self):
-        print("\nDeconvolution Settings")
+    def get_config(self):
+        """Return the current configuration for deconvolution
+        """
+        print("\nDeconvolution configuration")
         print(f"\tIterations: {self.iterations}")
         print(f"\tNA: {self.numerical_aperture}")
         print(f"\tWavelength: {self.wavelength}")
@@ -40,6 +44,9 @@ class Deconvolution:
         print(f"\tReg factor:{self.reg_factor}")
         print(f"\tRi Immersion: {self.ri_immersion}")
         print(f"\tRi Sample: {self.ri_sample}\n")
+
+    def set_config(self):
+        return
 
     def deconvolve(self, image: "net.imglib2.RandomAccessibleInterval", psf=None):
         """Deconvolve images"""
@@ -52,7 +59,7 @@ class Deconvolution:
 
         # deconvolve image
         image_decon = self.OpService.namespace(_CreateNamespace()).img(image_f)
-        with tooled.util.Loader("Deconvolving image..."):
+        with tooled.util.Loader("Deconvolving image...", style='build'):
             self.OpService.deconvolve().richardsonLucyTV(
                 image_decon, image_f, psf, self.iterations, self.reg_factor
             )
