@@ -5,7 +5,7 @@ from time import sleep
 
 
 class Loader:
-    def __init__(self, desc="Loading...", end="Done!", timeout=0.1, style=None):
+    def __init__(self, desc="Loading...", end="Done!", timeout=0.1, style="rotate"):
         """
         A loader-like context manager
 
@@ -19,10 +19,12 @@ class Loader:
         self.timeout = timeout
 
         self._thread = Thread(target=self._animate, daemon=True)
-        if style == None:
-            self.steps = ["⣠", "⣄", "⡤", "⢤"]
+        if style == "rotate":
+            self.steps = ["⠚", "⠓", "⠋", "⠙"]
         if style == "build":        
-            self.steps = ["⡀", "⠄", "⠂", "⠁", "⢁","⠡", "⠑", "⠉", "⡉", "⠍","⠋", "⢋", "⠫", "⠛" ]
+            self.steps = ["⡀", "⠄", "⠂", "⠁", "⢁", "⠡", "⠑", "⠉", "⡉", "⠍","⠋", "⢋", "⠫", "⠛"]
+        if style == "destroy":
+            self.steps = ["⠛", "⠫", "⢋", "⠋", "⠍", "⡉", "⠉", "⠑", "⠡", "⢁", "⠁","⠂", "⠄", "⡀"]
         self.done = False
 
     def start(self):
