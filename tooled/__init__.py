@@ -1,5 +1,8 @@
-import tooled.plot
 import tooled.dataframe
+import tooled.image
+import tooled.imagej
+import tooled.plot
+import tooled.util
 
 
 def obj_info(object):
