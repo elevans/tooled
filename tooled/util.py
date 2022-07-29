@@ -35,6 +35,8 @@ class Loader:
             self.steps = ["⡀", "⠄", "⠂", "⠁", "⢁", "⠡", "⠑", "⠉", "⡉", "⠍","⠋", "⢋", "⠫", "⠛"]
         if style == "destroy":
             self.steps = ["⠛", "⠫", "⢋", "⠋", "⠍", "⡉", "⠉", "⠑", "⠡", "⢁", "⠁","⠂", "⠄", "⡀"]
+        if style == "shuffle":
+            self.steps = ["⠛", "⠞", "⡜", "⡴","⣤", "⢦", "⢣", "⠳"]
         self.done = False
 
     def start(self):
