@@ -1,12 +1,12 @@
-import tooled.util
+import aloader
 import scyjava as sj
 
 from functools import lru_cache
 
 
 class Deconvolution:
-    """Deconvolve an image with ImageJ Ops implementation of Richardson Lucy.
-    """
+    """Deconvolve an image with ImageJ Ops implementation of Richardson Lucy."""
+
     def __init__(
         self,
         OpService,
@@ -32,8 +32,7 @@ class Deconvolution:
         self.ri_sample = ri_sample
 
     def get_config(self):
-        """Return the current configuration for deconvolution
-        """
+        """Return the current configuration for deconvolution"""
         print("\nDeconvolution configuration")
         print(f"\tIterations: {self.iterations}")
         print(f"\tNA: {self.numerical_aperture}")
@@ -55,18 +54,20 @@ class Deconvolution:
 
         # create synthetic PSF if none supplied.
         if psf == None:
-            psf = self._create_synthetic_psf(image)
+            psf = self.create_synthetic_psf(image)
 
         # deconvolve image
         image_decon = self.OpService.namespace(_CreateNamespace()).img(image_f)
-        with tooled.util.Loader("Deconvolving image...", style='build'):
+        with aloader.Loader("Deconvolving image...", "Done!", style="block-shuffle", process_time=True):
             self.OpService.deconvolve().richardsonLucyTV(
                 image_decon, image_f, psf, self.iterations, self.reg_factor
             )
 
         return image_decon
 
-    def _create_synthetic_psf(self, image: "net.imglib2.RandomAccessibleInterval"):
+    def create_synthetic_psf(self, image: "net.imglib2.RandomAccessibleInterval"):
+        """Create a synthetic PSF.
+        """
         psf_dims = []
         for i in range(len(image.shape)):
             psf_dims.append(image.dimension(i))
