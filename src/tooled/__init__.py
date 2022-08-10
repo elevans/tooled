@@ -12,5 +12,3 @@ def obj_info(object):
     obj_dir = dir(object)
     for at1, at2, at3 in zip(obj_dir[::3], obj_dir[1::3], obj_dir[2::3]):
         print("{:<30}{:<30}{:<}".format(at1, at2, at3))
-
-    return
