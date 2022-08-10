@@ -47,7 +47,7 @@ class Deconvolution:
 
     def __init__(
         self,
-        OpService,
+        ij_instance=None,
         iterations=30,
         numerical_aperture=0.75,
         wavelength=550,
@@ -58,7 +58,7 @@ class Deconvolution:
         ri_immersion=1.5,
         ri_sample=1.4,
     ):
-        self.OpService = OpService
+        self.ij = ij_instance
         self.iterations = iterations
         self.numerical_aperture = numerical_aperture
         self.wavelength = wavelength * 1e-9
@@ -138,19 +138,22 @@ class Deconvolution:
 
     def deconvolve(self, image: "net.imglib2.RandomAccessibleInterval", psf=None):
         """Deconvolve images"""
+        if self.ij == None:
+            self._get_imagej_gateway()
+
         # convert image to float
-        image_f = self.OpService.convert().float32(image)
+        image_f = self.ij.op().convert().float32(image)
 
         # create synthetic PSF if none supplied.
         if psf == None:
             psf = self.create_synthetic_psf(image)
 
         # deconvolve image
-        image_decon = self.OpService.namespace(_CreateNamespace()).img(image_f)
+        image_decon = self.ij.op().namespace(_CreateNamespace()).img(image_f)
         with aloader.Loader(
             "Deconvolving image...", "Done!", style="block-shuffle", process_time=True
         ):
-            self.OpService.deconvolve().richardsonLucyTV(
+            self.ij.op().deconvolve().richardsonLucyTV(
                 image_decon, image_f, psf, self.iterations, self.reg_factor
             )
 
@@ -158,12 +161,15 @@ class Deconvolution:
 
     def create_synthetic_psf(self, image: "net.imglib2.RandomAccessibleInterval"):
         """Create a synthetic PSF."""
+        if self.ij == None:
+            self._get_imagej_gateway()
+
         psf_dims = []
         for i in range(len(image.shape)):
             psf_dims.append(image.dimension(i))
 
         psf_size = _FinalDimensions()(psf_dims)
-        psf = self.OpService.namespace(_CreateNamespace()).kernelDiffraction(
+        psf = self.ij.op().namespace(_CreateNamespace()).kernelDiffraction(
             psf_size,
             self.numerical_aperture,
             self.wavelength,
@@ -176,6 +182,14 @@ class Deconvolution:
         )
 
         return psf
+
+    def _get_imagej_gateway(self):
+        try:
+            from imagej import ij
+
+            self.ij = ij
+        except ImportError:
+            print(f"PyImageJ has not been initialized.")
 
 
 def image_conversion_check(imagej_instance):
