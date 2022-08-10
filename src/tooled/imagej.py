@@ -1,4 +1,3 @@
-import aloader
 import scyjava as sj
 
 from functools import lru_cache
@@ -150,12 +149,9 @@ class Deconvolution:
 
         # deconvolve image
         image_decon = self.ij.op().namespace(_CreateNamespace()).img(image_f)
-        with aloader.Loader(
-            "Deconvolving image...", "Done!", style="block-shuffle", process_time=True
-        ):
-            self.ij.op().deconvolve().richardsonLucyTV(
-                image_decon, image_f, psf, self.iterations, self.reg_factor
-            )
+        self.ij.op().deconvolve().richardsonLucyTV(
+            image_decon, image_f, psf, self.iterations, self.reg_factor
+        )
 
         return image_decon
 
@@ -169,16 +165,20 @@ class Deconvolution:
             psf_dims.append(image.dimension(i))
 
         psf_size = _FinalDimensions()(psf_dims)
-        psf = self.ij.op().namespace(_CreateNamespace()).kernelDiffraction(
-            psf_size,
-            self.numerical_aperture,
-            self.wavelength,
-            self.ri_sample,
-            self.ri_immersion,
-            self.lateral_res,
-            self.axial_res,
-            self.particle_pos,
-            _FloatType()(),
+        psf = (
+            self.ij.op()
+            .namespace(_CreateNamespace())
+            .kernelDiffraction(
+                psf_size,
+                self.numerical_aperture,
+                self.wavelength,
+                self.ri_sample,
+                self.ri_immersion,
+                self.lateral_res,
+                self.axial_res,
+                self.particle_pos,
+                _FloatType()(),
+            )
         )
 
         return psf
