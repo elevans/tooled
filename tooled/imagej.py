@@ -3,9 +3,43 @@ import scyjava as sj
 
 from functools import lru_cache
 
+class ImageProcess():
+    """For image processing functions. Note this class
+    only supports ImgLib2 images.
+    """
+    def __init__(self, ij_instance=None):
+        self.ij = ij_instance
+
+    def gauss_subtraction(self, image: "net.imglib2.RandomAccessibleInterval", sigma):
+        if self.ij == None:
+            self._get_imagej_gateway()
+        image = self.ij.op().convert().int32(image)
+        image_gauss = self.ij.op().run("filter.gauss", image, sigma)
+        return image_gauss - image
+
+    def invert(self, image: "net.imglib2.RandomAccessibleInterval"):
+        if self.ij == None:
+            self._get_imagej_gateway()
+        
+        image_i = self.ij.dataset().create(image)
+        self.ij.op().run("image.invert", image_i, image)
+        return image_i
+
+    def _get_imagej_gateway(self):
+        try:
+            from imagej import ij
+            self.ij = ij
+        except ImportError:
+            print(f"PyImageJ has not been initialized.")
 
 class Deconvolution:
-    """Deconvolve an image with ImageJ Ops implementation of Richardson Lucy."""
+    """Deconvolve an image with ImageJ Ops implementation of Richardson Lucy.
+    
+    :param iterations: Number of iterations (defualt=30)
+    :param numerical_aperture: Numerical aperture of the objective used (default=0.75)
+    :param wavelength: Wavelength in nm used in the image (default=550)
+    :param particle_pos: Position of the particle (positive value in nm) relative to the coverlsip (0)
+    """
 
     def __init__(
         self,
@@ -13,9 +47,9 @@ class Deconvolution:
         iterations=30,
         numerical_aperture=0.75,
         wavelength=550,
-        xy_spacing=110,
-        z_spacing=800,
-        depth=0,
+        lateral_res=100,
+        axial_res=100,
+        particle_pos=2000,
         reg_factor=0.01,
         ri_immersion=1.5,
         ri_sample=1.4,
@@ -24,9 +58,9 @@ class Deconvolution:
         self.iterations = iterations
         self.numerical_aperture = numerical_aperture
         self.wavelength = wavelength * 1e-9
-        self.xy_spacing = xy_spacing * 1e-9
-        self.z_spacing = z_spacing * 1e-9
-        self.depth = depth
+        self.lateral_res = lateral_res * 1e-9
+        self.axial_res = axial_res * 1e-9
+        self.particle_pos = particle_pos * 1e-9
         self.reg_factor = reg_factor
         self.ri_immersion = ri_immersion
         self.ri_sample = ri_sample
@@ -35,17 +69,68 @@ class Deconvolution:
         """Return the current configuration for deconvolution"""
         print("\nDeconvolution configuration")
         print(f"\tIterations: {self.iterations}")
-        print(f"\tNA: {self.numerical_aperture}")
-        print(f"\tWavelength: {self.wavelength}")
-        print(f"\tXY spacing: {self.xy_spacing}")
-        print(f"\tZ spacing: {self.z_spacing}")
-        print(f"\tDepth: {self.depth}")
-        print(f"\tReg factor:{self.reg_factor}")
+        print(f"\tNumerical Aperture: {self.numerical_aperture}")
+        print(f"\tWavelength: {self.wavelength / 1e-9} nm")
+        print(f"\tLateral resolution: {self.lateral_res / 1e-9} nm")
+        print(f"\tAxial resolution: {self.axial_res / 1e-9} nm")
+        print(f"\tParticle position: {round(self.particle_pos / 1e-9)} nm")
         print(f"\tRi Immersion: {self.ri_immersion}")
-        print(f"\tRi Sample: {self.ri_sample}\n")
+        print(f"\tRi Sample: {self.ri_sample}")
+        print(f"\tReg factor: {self.reg_factor}\n")
 
-    def set_config(self):
-        return
+    def get_iterations(self):
+        return self.iterations
+
+    def set_iterations(self, iterations):
+        self.iterations = iterations
+
+    def get_numerical_aperture(self):
+        return self.numerical_aperture
+
+    def set_numerical_aperture(self, numerical_aperture):
+        self.numerical_aperture = numerical_aperture 
+
+    def get_wavelength(self):
+        return self.wavelength
+
+    def set_wavelength(self, wavelength):
+        self.get_wavelength = wavelength * 1e-9
+
+    def get_lateral_res(self):
+        return self.lateral_res
+
+    def set_lateral_res(self, lateral_res):
+        self.lateral_res = lateral_res * 1e-9
+
+    def get_axial_res(self):
+        return self.axial_res
+
+    def set_axial_res(self, axial_res):
+        self.axial_res = axial_res * 1e-9
+
+    def get_particle_pos(self):
+        return self.particle_pos
+
+    def set_particle_pos(self, particle_pos):
+        self.particle_pos = particle_pos * 1e-9
+
+    def get_ri_immersion(self):
+        return self.ri_immersion
+
+    def set_ri_immersion(self, ri_immersion):
+        self.ri_immersion = ri_immersion
+
+    def get_ri_sample(self):
+        return self.ri_sample
+
+    def set_ri_sample(self, ri_sample):
+        self.ri_sample = ri_sample
+
+    def get_reg_factor(self):
+        return self.reg_factor
+
+    def set_reg_factor(self, reg_factor):
+        self.reg_factor = reg_factor
 
     def deconvolve(self, image: "net.imglib2.RandomAccessibleInterval", psf=None):
         """Deconvolve images"""
@@ -79,9 +164,9 @@ class Deconvolution:
             self.wavelength,
             self.ri_sample,
             self.ri_immersion,
-            self.xy_spacing,
-            self.z_spacing,
-            self.depth,
+            self.lateral_res,
+            self.axial_res,
+            self.particle_pos,
             _FloatType()(),
         )
 
