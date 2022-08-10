@@ -3,10 +3,12 @@ import scyjava as sj
 
 from functools import lru_cache
 
-class ImageProcess():
+
+class ImageProcess:
     """For image processing functions. Note this class
     only supports ImgLib2 images.
     """
+
     def __init__(self, ij_instance=None):
         self.ij = ij_instance
 
@@ -20,7 +22,7 @@ class ImageProcess():
     def invert(self, image: "net.imglib2.RandomAccessibleInterval"):
         if self.ij == None:
             self._get_imagej_gateway()
-        
+
         image_i = self.ij.dataset().create(image)
         self.ij.op().run("image.invert", image_i, image)
         return image_i
@@ -28,13 +30,15 @@ class ImageProcess():
     def _get_imagej_gateway(self):
         try:
             from imagej import ij
+
             self.ij = ij
         except ImportError:
             print(f"PyImageJ has not been initialized.")
 
+
 class Deconvolution:
     """Deconvolve an image with ImageJ Ops implementation of Richardson Lucy.
-    
+
     :param iterations: Number of iterations (defualt=30)
     :param numerical_aperture: Numerical aperture of the objective used (default=0.75)
     :param wavelength: Wavelength in nm used in the image (default=550)
@@ -88,7 +92,7 @@ class Deconvolution:
         return self.numerical_aperture
 
     def set_numerical_aperture(self, numerical_aperture):
-        self.numerical_aperture = numerical_aperture 
+        self.numerical_aperture = numerical_aperture
 
     def get_wavelength(self):
         return self.wavelength
@@ -143,7 +147,9 @@ class Deconvolution:
 
         # deconvolve image
         image_decon = self.OpService.namespace(_CreateNamespace()).img(image_f)
-        with aloader.Loader("Deconvolving image...", "Done!", style="block-shuffle", process_time=True):
+        with aloader.Loader(
+            "Deconvolving image...", "Done!", style="block-shuffle", process_time=True
+        ):
             self.OpService.deconvolve().richardsonLucyTV(
                 image_decon, image_f, psf, self.iterations, self.reg_factor
             )
@@ -151,8 +157,7 @@ class Deconvolution:
         return image_decon
 
     def create_synthetic_psf(self, image: "net.imglib2.RandomAccessibleInterval"):
-        """Create a synthetic PSF.
-        """
+        """Create a synthetic PSF."""
         psf_dims = []
         for i in range(len(image.shape)):
             psf_dims.append(image.dimension(i))
