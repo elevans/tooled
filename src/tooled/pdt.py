@@ -1,3 +1,5 @@
+# pandas DataFrame tools: pdt
+
 import pandas as pd
 from typing import List
 
@@ -13,11 +15,11 @@ def extract_column_as_dataframe(
 
     :param column: The column to extract.
     :param dataframe: Input DataFrame.
-    :return: List of DataFrames.
+    :return: Dict of DataFrames.
     """
     unique_column_vals = set(dataframe[column].to_list())
-    dfs = []
+    dfs = {}
     for val in unique_column_vals:
-        dfs.append(dataframe[dataframe[column] == val])
+        dfs[val] = dataframe[dataframe[column] == val]
 
     return dfs

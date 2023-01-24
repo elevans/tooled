@@ -1,5 +1,6 @@
-import scyjava as sj
+# ImageJ tools: ijt
 
+import scyjava as sj
 from functools import lru_cache
 
 
@@ -11,12 +12,24 @@ class ImageProcess:
     def __init__(self, ij_instance=None):
         self.ij = ij_instance
 
-    def gauss_subtraction(self, image: "net.imglib2.RandomAccessibleInterval", sigma):
-        if self.ij == None:
-            self._get_imagej_gateway()
-        image = self.ij.op().convert().int32(image)
-        image_gauss = self.ij.op().run("filter.gauss", image, sigma)
-        return image_gauss - image
+    def gauss_sub(self, image: "net.imglib2.RandomAccessibleInterval", sigma):
+        """Apply a guassian blur subtraction.
+        """
+
+        self._check_ij_gateway()
+        img = self.ij.op().convert().int32(image)
+        img_g = self.ij.op().filter().gauss(img, sigma)
+        return img_g - img
+
+    def gauss_sub_stack(self, stack, sigma: float):
+        stack = self.ij.op().convert().int32(stack)
+        gauss_slices = []
+        for i in range(stack.shape[2]):
+            s = self.ij.py.to_dataset(stack[:, :, i])
+            s_g = self.ij.op().filter().gauss(s, sigma)
+            s_gs = s - s_g
+            gauss_slices.append(s_gs)
+        return _Views().stack(*gauss_slices)
 
     def invert(self, image: "net.imglib2.RandomAccessibleInterval"):
         if self.ij == None:
@@ -25,6 +38,10 @@ class ImageProcess:
         image_i = self.ij.dataset().create(image)
         self.ij.op().run("image.invert", image_i, image)
         return image_i
+
+    def _check_ij_gateway(self):
+        if self.ij == None:
+            self._get_imagej_gateway()
 
     def _get_imagej_gateway(self):
         try:
@@ -46,7 +63,6 @@ class Deconvolution:
 
     def __init__(
         self,
-        ij_instance=None,
         iterations=30,
         numerical_aperture=0.75,
         wavelength=550,
@@ -56,8 +72,9 @@ class Deconvolution:
         reg_factor=0.01,
         ri_immersion=1.5,
         ri_sample=1.4,
+        psf=None,
+        ij_instance=None,
     ):
-        self.ij = ij_instance
         self.iterations = iterations
         self.numerical_aperture = numerical_aperture
         self.wavelength = wavelength * 1e-9
@@ -67,6 +84,8 @@ class Deconvolution:
         self.reg_factor = reg_factor
         self.ri_immersion = ri_immersion
         self.ri_sample = ri_sample
+        self.ij = ij_instance
+        self.psf = psf
 
     def get_config(self):
         """Return the current configuration for deconvolution"""
@@ -79,7 +98,12 @@ class Deconvolution:
         print(f"\tParticle position: {round(self.particle_pos / 1e-9)} nm")
         print(f"\tRi Immersion: {self.ri_immersion}")
         print(f"\tRi Sample: {self.ri_sample}")
-        print(f"\tReg factor: {self.reg_factor}\n")
+        print(f"\tReg factor: {self.reg_factor}")
+        if self.psf == None:
+            print(f"\tPSF: synthetic (default)\n")
+        else:
+            print(f"{self.psf}\n")
+
 
     def get_iterations(self):
         return self.iterations
@@ -135,6 +159,12 @@ class Deconvolution:
     def set_reg_factor(self, reg_factor):
         self.reg_factor = reg_factor
 
+    def get_psf(self):
+        return self.psf
+
+    def set_psf(self, psf):
+        self.psf = psf
+
     def deconvolve(self, image: "net.imglib2.RandomAccessibleInterval", psf=None):
         """Deconvolve images"""
         if self.ij == None:
@@ -144,13 +174,13 @@ class Deconvolution:
         image_f = self.ij.op().convert().float32(image)
 
         # create synthetic PSF if none supplied.
-        if psf == None:
-            psf = self.create_synthetic_psf(image)
+        if self.psf == None:
+            self.create_synthetic_psf(image)
 
         # deconvolve image
         image_decon = self.ij.op().namespace(_CreateNamespace()).img(image_f)
         self.ij.op().deconvolve().richardsonLucyTV(
-            image_decon, image_f, psf, self.iterations, self.reg_factor
+            image_decon, image_f, self.psf, self.iterations, self.reg_factor
         )
 
         return image_decon
@@ -181,7 +211,7 @@ class Deconvolution:
             )
         )
 
-        return psf
+        self.psf = psf
 
     def _get_imagej_gateway(self):
         try:
@@ -196,7 +226,6 @@ def image_conversion_check(imagej_instance):
     """
     Test ImageJ/ImgLib2 image conversions.
     """
-
     # get image classes
     ImagePlus = sj.jimport("ij.ImagePlus")
     Dataset = sj.jimport("net.imagej.Dataset")
@@ -216,16 +245,20 @@ def image_conversion_check(imagej_instance):
             )
 
 
-@lru_cache(maxsize=None)
+@lru_cache
 def _CreateNamespace():
     return sj.jimport("net.imagej.ops.create.CreateNamespace")
 
 
-@lru_cache(maxsize=None)
+@lru_cache
 def _FinalDimensions():
     return sj.jimport("net.imglib2.FinalDimensions")
 
 
-@lru_cache(maxsize=None)
+@lru_cache
 def _FloatType():
     return sj.jimport("net.imglib2.type.numeric.real.FloatType")
+
+@lru_cache
+def _Views():
+    return sj.jimport("net.imglib2.view.Views")
