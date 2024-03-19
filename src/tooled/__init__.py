@@ -28,21 +28,6 @@ def obj_info(obj):
     for at1, at2, at3 in zip(col_a, col_b, col_c):
         print("{:<30}{:<30}{:<}".format(at1, at2, at3))
 
-def timed_function(f, *args, **kwargs):
-    """
-    Time a method/function by applying the @timed_function decorator to
-    the desired method.
-    """
-    myname = str(f).split(' ')[1]
-    def new_func(*args, **kwargs):
-        start = time.time()
-        result = f(*args, **kwargs)
-        delta = time.time() - start
-        print('Function {} Time = {:6.3f}ms'.format(myname, delta*1000))
-        return result
-
-    return new_func
-
 
 def _pad_list(l: List[str], size: int):
     while len(l) < size:
